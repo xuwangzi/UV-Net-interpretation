@@ -55,6 +55,17 @@ def _conv2d(in_channels, out_channels, kernel_size, padding=0, bias=False):
 
 
 def _fc(in_features, out_features, bias=False):
+    """
+    Helper function to create a fully connected layer with batchnorm and LeakyReLU activation
+
+    Args:
+        in_features (int): Input feature dimension
+        out_features (int): Output feature dimension
+        bias (bool, optional): Whether bias is used. Defaults to False.
+
+    Returns:
+        nn.Sequential: Sequential contained the Linear, BatchNorm1d and LeakyReLU layers
+    """
     return nn.Sequential(
         nn.Linear(in_features, out_features, bias=bias),
         nn.BatchNorm1d(out_features),
@@ -181,6 +192,7 @@ class UVNetSurfaceEncoder(nn.Module):
         self.conv3 = _conv2d(128, 256, 3, padding=1, bias=False)
         self.final_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = _fc(256, output_dims, bias=False)
+        
         for m in self.modules():
             self.weights_init(m)
 

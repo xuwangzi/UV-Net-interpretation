@@ -133,9 +133,9 @@ class Classification(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
         self.model = UVNetClassifier(num_classes=num_classes)
-        self.train_acc = torchmetrics.Accuracy()
-        self.val_acc = torchmetrics.Accuracy()
-        self.test_acc = torchmetrics.Accuracy()
+        self.train_acc = torchmetrics.Accuracy(task='multiclass', num_classes=num_classes)
+        self.val_acc = torchmetrics.Accuracy(task='multiclass', num_classes=num_classes)
+        self.test_acc = torchmetrics.Accuracy(task='multiclass', num_classes=num_classes)
 
     def forward(self, batched_graph):
         logits = self.model(batched_graph)

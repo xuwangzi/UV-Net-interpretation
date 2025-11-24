@@ -5,7 +5,11 @@ import time
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.utilities.seed import seed_everything
+# from pytorch_lightning.utilities.seed import seed_everything
+try:
+    from lightning_fabric.utilities.seed import seed_everything
+except ImportError:
+    from pytorch_lightning.utilities.seed import seed_everything
 
 from datasets.solidletters import SolidLetters
 from uvnet.models import Classification
@@ -36,7 +40,14 @@ parser.add_argument(
     help="Experiment name (used to create folder inside ./results/ to save logs and checkpoints)",
 )
 
-parser = Trainer.add_argparse_args(parser)
+# parser = Trainer.add_argparse_args(parser)
+# 添加 Trainer 相关参数
+parser.add_argument("--max_epochs", type=int, default=1000, help="Maximum number of epochs")
+parser.add_argument("--gpus", type=int, default=None, help="Number of GPUs (deprecated, use devices)")
+parser.add_argument("--accelerator", type=str, default="auto", help="Accelerator type (auto, gpu, cpu)")
+parser.add_argument("--devices", type=int, default=1, help="Number of devices")
+parser.add_argument("--precision", type=int, default=32, help="Precision (16, 32, 64)")
+
 args = parser.parse_args()
 
 results_path = (
@@ -56,8 +67,20 @@ checkpoint_callback = ModelCheckpoint(
     save_last=True,
 )
 
-trainer = Trainer.from_argparse_args(
-    args,
+# trainer = Trainer.from_argparse_args(
+#     args,
+#     callbacks=[checkpoint_callback],
+#     logger=TensorBoardLogger(
+#         str(results_path), name=month_day, version=hour_min_second,
+#     ),
+# )
+
+# Trainer 创建
+trainer = Trainer(
+    max_epochs=args.max_epochs,
+    accelerator=args.accelerator,
+    devices=args.devices if args.gpus is None else args.gpus,
+    precision=args.precision,
     callbacks=[checkpoint_callback],
     logger=TensorBoardLogger(
         str(results_path), name=month_day, version=hour_min_second,
